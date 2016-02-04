@@ -237,9 +237,31 @@ class tx_caretakerinstance_FindExtensionUpdatesTestService extends tx_caretakeri
 	 */
 	public function getLatestExtensionTerInfos($ext_key, $ext_version) {
 		$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+		/* @var $repo \\TYPO3\\CMS\\Extensionmanager\\Domain\\Repository\\ExtensionRepository */
 		$repo = $objectManager->get("TYPO3\\CMS\\Extensionmanager\\Domain\\Repository\\ExtensionRepository");
 		$repo->initializeObject();
 
+	        if($this->getConfigValue('checkDependencies')){
+        	    /* @var $dep TYPO3\CMS\Extensionmanager\Utility\DependencyUtility */
+	            $dep = $objectManager->get("TYPO3\CMS\Extensionmanager\Utility\DependencyUtility");
+
+        	    $all = $repo->findByExtensionKeyOrderedByVersion($ext_key);
+	            foreach($all as $current) {
+        	        if ($current === null || !$current instanceof \TYPO3\CMS\Extensionmanager\Domain\Model\Extension) {
+                	    return false;
+	                }
+        	        $dep->checkDependencies($current);
+                	if(!$dep->hasDependencyErrors()){
+	                    return array(
+        	                    'extkey' => $current->getExtensionKey(),
+                	            'version' => $current->getVersion(),
+	                    );
+        	        }
+	            }
+        	    return false;
+	        }
+
+        	/* @var $current \TYPO3\CMS\Extensionmanager\Domain\Model\Extension */
 		$extension = $repo->findHighestAvailableVersion($ext_key);
 
 		if ($extension === null || !$extension instanceof \TYPO3\CMS\Extensionmanager\Domain\Model\Extension) {

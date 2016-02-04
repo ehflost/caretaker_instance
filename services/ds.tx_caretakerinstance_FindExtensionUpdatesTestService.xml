@@ -70,6 +70,16 @@
 					</config>
 				</TCEforms>
 			</status_of_updateable_extensions>
+
+			<checkDependencies>
+				<TCEforms>
+					<label>Respect Typo3 Dependencies</label>
+					<config>
+						<type>check</type>
+						<default>1</default>
+					</config>
+				</TCEforms>
+			</checkDependencies>
 			
 			<custom_extkey_whitlelist>
 				<TCEforms>
